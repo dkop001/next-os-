@@ -1,0 +1,96 @@
+.dock-container {
+  position: absolute;
+  bottom: 15px; /* Slightly closer to bottom */
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.dock {
+  display: flex;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 16px; /* rounded-xl-ish */
+  pointer-events: auto;
+  background: rgba(8, 9, 13, 0.6);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dock:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(8, 9, 13, 0.7);
+}
+
+.dock-item {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), background 150ms ease;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.dock-item:hover {
+  transform: translateY(-4px) scale(1.05); /* 1.03 scale as requested or close to it */
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dock-icon {
+  font-size: 1.2rem;
+  filter: grayscale(0.2);
+  transition: filter 0.2s;
+}
+
+.dock-item:hover .dock-icon {
+  filter: grayscale(0);
+}
+
+.dock-dot {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: transparent;
+  transition: all 0.2s;
+}
+
+.dock-item.active .dock-dot {
+  background: var(--text-dim);
+}
+
+.dock-item.focused .dock-dot {
+  background: var(--cyber-cyan);
+  box-shadow: 0 0 4px var(--cyber-cyan);
+  width: 5px;
+  border-radius: 1px;
+}
+
+.dock-item.focused {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@keyframes dockPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.dock-item.minimized-pulse {
+  animation: dockPulse 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}

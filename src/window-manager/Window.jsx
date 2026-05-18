@@ -1,0 +1,132 @@
+import React, { useState } from 'react';
+import { useOSStore } from '../store/useOSStore';
+import { Rnd } from 'react-rnd';
+import { motion } from 'framer-motion';
+import './Window.css';
+import NoteAI from '../apps/NoteAI';
+import CrimeInspector from '../apps/CrimeInspector';
+import ChromeApp from '../apps/ChromeApp';
+import JarvisApp from '../apps/JarvisApp';
+
+const Window = ({ app }) => {
+  const { focusApp, minimizeApp, maximizeApp, closeApp, updateWindowPos, updateWindowSize, activeWindowId, setWindowLayout } = useOSStore();
+  const [showSnapMenu, setShowSnapMenu] = useState(false);
+
+  // We don't need if (!app.isOpen) return null; here since WindowManager handles it with AnimatePresence
+
+  const isFocused = app.id === activeWindowId;
+
+  // Derive Rnd bounds
+  const size = app.isMaximized 
+    ? { width: '100%', height: '100%' } 
+    : { width: app.width, height: app.height };
+    
+  const position = app.isMaximized 
+    ? { x: 0, y: 0 } 
+    : { x: app.x, y: app.y };
+
+  return (
+    <Rnd
+      bounds=".window-manager"
+      size={size}
+      position={position}
+      minWidth={320}
+      minHeight={240}
+      onDragStart={() => focusApp(app.id)}
+      onResizeStart={() => focusApp(app.id)}
+      onDragStop={(e, d) => {
+        if (!app.isMaximized && !app.isMinimized) {
+          updateWindowPos(app.id, { x: d.x, y: d.y });
+        }
+      }}
+      onResizeStop={(e, direction, ref, delta, position) => {
+        if (!app.isMaximized && !app.isMinimized) {
+          updateWindowSize(app.id, { width: ref.offsetWidth, height: ref.offsetHeight });
+          updateWindowPos(app.id, { x: position.x, y: position.y });
+        }
+      }}
+      disableDragging={app.isMaximized || app.isMinimized}
+      enableResizing={!app.isMaximized && !app.isMinimized}
+      dragHandleClassName="window-header"
+      resizeHandleComponent={{
+        bottomRight: (
+          <div className="resize-handle-br">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="10" cy="10" r="1.2" fill="currentColor"/>
+              <circle cx="10" cy="6" r="1.2" fill="currentColor"/>
+              <circle cx="10" cy="2" r="1.2" fill="currentColor"/>
+              <circle cx="6" cy="10" r="1.2" fill="currentColor"/>
+              <circle cx="6" cy="6" r="1.2" fill="currentColor"/>
+              <circle cx="2" cy="10" r="1.2" fill="currentColor"/>
+            </svg>
+          </div>
+        )
+      }}
+      style={{
+        zIndex: app.zIndex,
+        pointerEvents: app.isMinimized ? 'none' : 'auto'
+      }}
+      className={`window-rnd ${isFocused ? 'focused' : ''} ${app.isMinimized ? 'minimized' : ''}`}
+    >
+      <motion.div 
+        className={`window-inner ${isFocused ? 'focused' : ''}`}
+        onMouseDownCapture={() => focusApp(app.id)}
+        initial="closed"
+        animate={app.isMinimized ? "minimized" : "open"}
+        exit="closed"
+        variants={{
+          open: { scale: 1, opacity: 1, y: 0, filter: "blur(0px)" },
+          minimized: { scale: 0.35, opacity: 0, y: 300, filter: "blur(5px)" },
+          closed: { scale: 0.95, opacity: 0, filter: "blur(2px)" }
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      >
+        {/* Header / Titlebar */}
+        <div 
+          className="window-header" 
+          onDoubleClick={() => maximizeApp(app.id)}
+        >
+          <div className="window-title">{app.title}</div>
+          <div className="window-controls">
+            <button className="control-btn minimize" onClick={(e) => { e.stopPropagation(); minimizeApp(app.id); }}>_</button>
+            
+            <div 
+              className="maximize-wrapper"
+              onMouseEnter={() => setShowSnapMenu(true)}
+              onMouseLeave={() => setShowSnapMenu(false)}
+              style={{ position: 'relative' }}
+            >
+              <button className="control-btn maximize" onClick={(e) => { e.stopPropagation(); maximizeApp(app.id); }}>[ ]</button>
+              {showSnapMenu && (
+                <div className="snap-menu glass">
+                  <div className="snap-layout-group">
+                    <div className="snap-layout-item left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'left'); }} title="Snap Left"></div>
+                    <div className="snap-layout-item right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'right'); }} title="Snap Right"></div>
+                  </div>
+                  <div className="snap-layout-group quarters">
+                    <div className="snap-layout-item top-left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'top-left'); }} title="Snap Top Left"></div>
+                    <div className="snap-layout-item top-right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'top-right'); }} title="Snap Top Right"></div>
+                    <div className="snap-layout-item bottom-left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'bottom-left'); }} title="Snap Bottom Left"></div>
+                    <div className="snap-layout-item bottom-right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'bottom-right'); }} title="Snap Bottom Right"></div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <button className="control-btn close" onClick={(e) => { e.stopPropagation(); closeApp(app.id); }}>×</button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className={`window-content ${app.content === 'ChromeApp' || app.content === 'JarvisApp' ? 'no-padding' : ''}`} onMouseDown={() => focusApp(app.id)}>
+          {app.content === 'NoteAI' && <NoteAI />}
+          {app.content === 'CrimeInspector' && <CrimeInspector />}
+          {app.content === 'ChromeApp' && <ChromeApp />}
+          {app.content === 'JarvisApp' && <JarvisApp />}
+        </div>
+      </motion.div>
+    </Rnd>
+  );
+};
+
+export default Window;
