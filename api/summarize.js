@@ -1,5 +1,5 @@
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GEMINI_API_KEY = process.env.NOTEAI_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.NOTEAI_GROQ_API_KEY || process.env.GROQ_API_KEY;
 
 const buildSummaryPrompt = (text) => `
 You are an expert note summarizer.

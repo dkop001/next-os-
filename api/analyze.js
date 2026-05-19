@@ -1,8 +1,8 @@
 import { neon } from '@neondatabase/serverless';
 
-const DATABASE_URL = process.env.DATABASE_URL;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const DATABASE_URL = process.env.CRIME_DATABASE_URL || process.env.DATABASE_URL;
+const GEMINI_API_KEY = process.env.CRIME_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.CRIME_GROQ_API_KEY || process.env.GROQ_API_KEY;
 
 const MODELS = [
   "llama-3.3-70b-versatile",
