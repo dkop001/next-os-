@@ -287,19 +287,26 @@
 /* Resize Handle */
 .resize-handle-br {
   position: absolute;
-  bottom: 6px;
-  right: 6px;
+  bottom: 4px;
+  right: 4px;
   color: var(--text-dim);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: nwse-resize;
-  pointer-events: none;
-  opacity: 0.5;
-  transition: color 0.2s, opacity 0.2s;
+  opacity: 0.4;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.resize-handle-br:hover {
+  color: var(--cyber-cyan);
+  opacity: 1;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 5px var(--cyber-cyan));
 }
 
 .window-inner.focused .resize-handle-br {
   color: var(--cyber-cyan);
-  opacity: 0.9;
+  opacity: 0.8;
 }

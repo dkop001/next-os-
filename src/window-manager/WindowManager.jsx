@@ -7,7 +7,7 @@ const WindowManager = () => {
   const { windows } = useOSStore();
 
   return (
-    <div className="window-manager" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+    <div className="window-manager" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 'calc(100% - 75px)', pointerEvents: 'none' }}>
       {/* pointerEvents: none on container so we can click desktop icons, 
           but we need to enable pointerEvents on windows themselves */}
       <AnimatePresence>

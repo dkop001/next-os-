@@ -51,13 +51,10 @@ const Window = ({ app }) => {
       resizeHandleComponent={{
         bottomRight: (
           <div className="resize-handle-br">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="10" cy="10" r="1.2" fill="currentColor"/>
-              <circle cx="10" cy="6" r="1.2" fill="currentColor"/>
-              <circle cx="10" cy="2" r="1.2" fill="currentColor"/>
-              <circle cx="6" cy="10" r="1.2" fill="currentColor"/>
-              <circle cx="6" cy="6" r="1.2" fill="currentColor"/>
-              <circle cx="2" cy="10" r="1.2" fill="currentColor"/>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.3"/>
+              <path d="M12 6L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+              <path d="M12 10L10 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.95"/>
             </svg>
           </div>
         )
