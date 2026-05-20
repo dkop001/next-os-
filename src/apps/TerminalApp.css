@@ -1,0 +1,164 @@
+/* ─── Terminal Application Container ─── */
+.terminal-app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(5, 8, 16, 0.98) 0%, rgba(8, 12, 24, 0.98) 100%);
+  color: var(--cyber-cyan, #00f3ff);
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+
+.terminal-xterm-node {
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Custom terminal scrollbar to match retro cyberpunk theme */
+.terminal-app-container ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.terminal-app-container ::-webkit-scrollbar-track {
+  background: rgba(5, 8, 16, 0.5);
+  border-radius: 4px;
+}
+
+.terminal-app-container ::-webkit-scrollbar-thumb {
+  background: rgba(0, 243, 255, 0.2);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+.terminal-app-container ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 243, 255, 0.5);
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+}
+
+/* Override xterm native selection style for premium cyber glow */
+.xterm-selection {
+  background-color: rgba(255, 0, 255, 0.3) !important;
+}
+
+.xterm-viewport {
+  background-color: transparent !important;
+  /* Scrollbar override */
+  scrollbar-color: rgba(0, 243, 255, 0.2) rgba(5, 8, 16, 0.5);
+  scrollbar-width: thin;
+}
+
+/* ─── Mount UI Consent Overlay ─── */
+.terminal-mount-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 8, 16, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeInOverlay 0.25s ease-out;
+}
+
+.mount-overlay-box {
+  width: 90%;
+  max-width: 420px;
+  background: rgba(10, 16, 32, 0.95);
+  border: 1px dashed rgba(0, 243, 255, 0.5);
+  box-shadow: 0 0 25px rgba(0, 243, 255, 0.15), inset 0 0 15px rgba(0, 243, 255, 0.05);
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  font-family: '"Fira Code", "Courier New", monospace';
+  color: #ffffff;
+  animation: zoomInOverlay 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mount-overlay-box h3 {
+  margin-top: 0;
+  font-size: 15px;
+  letter-spacing: 2px;
+  color: #ff00ff; /* Cyber magenta */
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.6);
+  margin-bottom: 12px;
+}
+
+.mount-overlay-box p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a0aec0;
+  margin-bottom: 24px;
+}
+
+.mount-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.mount-btn {
+  background: linear-gradient(135deg, #00f3ff 0%, #0066ff 100%);
+  border: none;
+  border-radius: 4px;
+  color: #000000;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 10px 16px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.mount-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 18px rgba(0, 243, 255, 0.8);
+}
+
+.mount-btn:active {
+  transform: translateY(1px);
+}
+
+.mount-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 0, 85, 0.5);
+  border-radius: 4px;
+  color: #ff0055;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mount-cancel:hover {
+  background: rgba(255, 0, 85, 0.1);
+  border-color: #ff0055;
+  box-shadow: 0 0 10px rgba(255, 0, 85, 0.3);
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomInOverlay {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

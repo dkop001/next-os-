@@ -59,6 +59,8 @@ const StartMenu = () => {
                           {app.id === 'crime' && '🕵️'}
                           {app.id === 'chrome' && '🌐'}
                           {app.id === 'jarvis' && '🤖'}
+                          {app.id === 'terminal' && '💻'}
+                          {app.id === 'ide' && '⚡'}
                         </div>
                         <div className="app-title">{app.title}</div>
                       </div>

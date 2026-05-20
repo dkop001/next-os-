@@ -7,6 +7,8 @@ import NoteAI from '../apps/NoteAI';
 import CrimeInspector from '../apps/CrimeInspector';
 import ChromeApp from '../apps/ChromeApp';
 import JarvisApp from '../apps/JarvisApp';
+import TerminalApp from '../apps/TerminalApp';
+import IDEApp from '../apps/IDEApp';
 
 const Window = ({ app }) => {
   const { focusApp, minimizeApp, maximizeApp, closeApp, updateWindowPos, updateWindowSize, activeWindowId, setWindowLayout } = useOSStore();
@@ -115,11 +117,13 @@ const Window = ({ app }) => {
         </div>
 
         {/* Content */}
-        <div className={`window-content ${app.content === 'ChromeApp' || app.content === 'JarvisApp' ? 'no-padding' : ''}`} onMouseDown={() => focusApp(app.id)}>
+        <div className={`window-content ${app.content === 'ChromeApp' || app.content === 'JarvisApp' || app.content === 'TerminalApp' || app.content === 'IDEApp' ? 'no-padding' : ''}`} onMouseDown={() => focusApp(app.id)}>
           {app.content === 'NoteAI' && <NoteAI />}
           {app.content === 'CrimeInspector' && <CrimeInspector />}
           {app.content === 'ChromeApp' && <ChromeApp />}
           {app.content === 'JarvisApp' && <JarvisApp />}
+          {app.content === 'TerminalApp' && <TerminalApp />}
+          {app.content === 'IDEApp' && <IDEApp />}
         </div>
       </motion.div>
     </Rnd>

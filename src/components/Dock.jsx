@@ -33,6 +33,8 @@ const Dock = () => {
               {app.id === 'crime' && '🕵️'}
               {app.id === 'chrome' && '🌐'}
               {app.id === 'jarvis' && '🤖'}
+              {app.id === 'terminal' && '💻'}
+              {app.id === 'ide' && '⚡'}
             </div>
             {app.isOpen && <div className="dock-dot"></div>}
           </div>

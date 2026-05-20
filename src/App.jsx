@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import WindowManager from './window-manager/WindowManager';
 import Dock from './components/Dock';
 import Desktop from './components/Desktop';
 import StartMenu from './components/StartMenu';
+import { storageService } from './services/storageService';
 
 function App() {
+  useEffect(() => {
+    storageService.init();
+  }, []);
+
   return (
     <div className="desktop-container">
       {/* Background grid effect */}
