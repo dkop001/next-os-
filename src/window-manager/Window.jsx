@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useOSStore } from '../store/useOSStore';
+import { useMobile } from '../hooks/useMobile';
 import { Rnd } from 'react-rnd';
 import { motion } from 'framer-motion';
 import './Window.css';
+import './WindowMobile.css';
 import NoteAI from '../apps/NoteAI';
 import CrimeInspector from '../apps/CrimeInspector';
 import ChromeApp from '../apps/ChromeApp';
@@ -12,6 +14,7 @@ import IDEApp from '../apps/IDEApp';
 
 const Window = ({ app }) => {
   const { focusApp, minimizeApp, maximizeApp, closeApp, updateWindowPos, updateWindowSize, activeWindowId, setWindowLayout } = useOSStore();
+  const isMobile = useMobile();
   const [showSnapMenu, setShowSnapMenu] = useState(false);
 
   // We don't need if (!app.isOpen) return null; here since WindowManager handles it with AnimatePresence
@@ -19,11 +22,11 @@ const Window = ({ app }) => {
   const isFocused = app.id === activeWindowId;
 
   // Derive Rnd bounds
-  const size = app.isMaximized 
+  const size = (app.isMaximized || isMobile)
     ? { width: '100%', height: '100%' } 
     : { width: app.width, height: app.height };
     
-  const position = app.isMaximized 
+  const position = (app.isMaximized || isMobile)
     ? { x: 0, y: 0 } 
     : { x: app.x, y: app.y };
 
@@ -42,13 +45,13 @@ const Window = ({ app }) => {
         }
       }}
       onResizeStop={(e, direction, ref, delta, position) => {
-        if (!app.isMaximized && !app.isMinimized) {
+        if (!app.isMaximized && !app.isMinimized && !isMobile) {
           updateWindowSize(app.id, { width: ref.offsetWidth, height: ref.offsetHeight });
           updateWindowPos(app.id, { x: position.x, y: position.y });
         }
       }}
-      disableDragging={app.isMaximized || app.isMinimized}
-      enableResizing={!app.isMaximized && !app.isMinimized}
+      disableDragging={app.isMaximized || app.isMinimized || isMobile}
+      enableResizing={!app.isMaximized && !app.isMinimized && !isMobile}
       dragHandleClassName="window-header"
       resizeHandleComponent={{
         bottomRight: (
@@ -81,40 +84,55 @@ const Window = ({ app }) => {
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
         {/* Header / Titlebar */}
-        <div 
-          className="window-header" 
-          onDoubleClick={() => maximizeApp(app.id)}
-        >
-          <div className="window-title">{app.title}</div>
-          <div className="window-controls">
-            <button className="control-btn minimize" onClick={(e) => { e.stopPropagation(); minimizeApp(app.id); }}>_</button>
-            
-            <div 
-              className="maximize-wrapper"
-              onMouseEnter={() => setShowSnapMenu(true)}
-              onMouseLeave={() => setShowSnapMenu(false)}
-              style={{ position: 'relative' }}
-            >
-              <button className="control-btn maximize" onClick={(e) => { e.stopPropagation(); maximizeApp(app.id); }}>[ ]</button>
-              {showSnapMenu && (
-                <div className="snap-menu glass">
-                  <div className="snap-layout-group">
-                    <div className="snap-layout-item left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'left'); }} title="Snap Left"></div>
-                    <div className="snap-layout-item right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'right'); }} title="Snap Right"></div>
+        {!isMobile && (
+          <div 
+            className="window-header" 
+            onDoubleClick={() => maximizeApp(app.id)}
+          >
+            <div className="window-title">{app.title}</div>
+            <div className="window-controls">
+              <button className="control-btn minimize" onClick={(e) => { e.stopPropagation(); minimizeApp(app.id); }}>_</button>
+              
+              <div 
+                className="maximize-wrapper"
+                onMouseEnter={() => setShowSnapMenu(true)}
+                onMouseLeave={() => setShowSnapMenu(false)}
+                style={{ position: 'relative' }}
+              >
+                <button className="control-btn maximize" onClick={(e) => { e.stopPropagation(); maximizeApp(app.id); }}>[ ]</button>
+                {showSnapMenu && (
+                  <div className="snap-menu glass">
+                    <div className="snap-layout-group">
+                      <div className="snap-layout-item left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'left'); }} title="Snap Left"></div>
+                      <div className="snap-layout-item right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'right'); }} title="Snap Right"></div>
+                    </div>
+                    <div className="snap-layout-group quarters">
+                      <div className="snap-layout-item top-left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'top-left'); }} title="Snap Top Left"></div>
+                      <div className="snap-layout-item top-right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'top-right'); }} title="Snap Top Right"></div>
+                      <div className="snap-layout-item bottom-left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'bottom-left'); }} title="Snap Bottom Left"></div>
+                      <div className="snap-layout-item bottom-right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'bottom-right'); }} title="Snap Bottom Right"></div>
+                    </div>
                   </div>
-                  <div className="snap-layout-group quarters">
-                    <div className="snap-layout-item top-left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'top-left'); }} title="Snap Top Left"></div>
-                    <div className="snap-layout-item top-right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'top-right'); }} title="Snap Top Right"></div>
-                    <div className="snap-layout-item bottom-left" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'bottom-left'); }} title="Snap Bottom Left"></div>
-                    <div className="snap-layout-item bottom-right" onClick={(e) => { e.stopPropagation(); setWindowLayout(app.id, 'bottom-right'); }} title="Snap Bottom Right"></div>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
+              
+              <button className="control-btn close" onClick={(e) => { e.stopPropagation(); closeApp(app.id); }}>×</button>
             </div>
-            
-            <button className="control-btn close" onClick={(e) => { e.stopPropagation(); closeApp(app.id); }}>×</button>
           </div>
-        </div>
+        )}
+
+        {/* Mobile Header */}
+        {isMobile && (
+          <div className="mobile-header">
+            <button className="mobile-back-btn" onClick={(e) => { e.stopPropagation(); closeApp(app.id); }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+            <div className="mobile-title">{app.title}</div>
+            <div className="mobile-spacer"></div>
+          </div>
+        )}
 
         {/* Content */}
         <div className={`window-content ${app.content === 'ChromeApp' || app.content === 'JarvisApp' || app.content === 'TerminalApp' || app.content === 'IDEApp' ? 'no-padding' : ''}`} onMouseDown={() => focusApp(app.id)}>

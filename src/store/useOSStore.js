@@ -75,11 +75,11 @@ export const useOSStore = create((set, get) => ({
       height: 450, 
       zIndex: 5,
       iconPos: { x: 20, y: 500 },
-      isPinned: true
+      isPinned: false
     },
     { 
       id: 'ide', 
-      title: 'JKC IDE', 
+      title: 'DK IDE', 
       content: 'IDEApp', 
       isOpen: false, 
       isMinimized: false, 
@@ -108,11 +108,38 @@ export const useOSStore = create((set, get) => ({
     const existing = state.windows.find((w) => w.id === appId);
     if (existing) {
       const newZ = state.maxZIndex + 1;
+      let initialPos = {};
+      
+      // Calculate perfect centered coordinates relative to current viewport if opening from closed state
+      if (!existing.isOpen) {
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+        
+        let width = Math.min(Math.max(Math.floor(screenW * 0.75), 650), 1000);
+        let height = Math.min(Math.max(Math.floor(screenH * 0.75), 450), 720);
+        
+        if (appId === 'ide') {
+          width = Math.min(Math.max(Math.floor(screenW * 0.85), 900), 1200);
+          height = Math.min(Math.max(Math.floor(screenH * 0.85), 600), 800);
+        } else if (appId === 'jarvis') {
+          width = Math.min(Math.max(Math.floor(screenW * 0.35), 400), 500);
+          height = Math.min(Math.max(Math.floor(screenH * 0.8), 580), 750);
+        } else if (appId === 'terminal') {
+          width = Math.min(Math.max(Math.floor(screenW * 0.65), 650), 850);
+          height = Math.min(Math.max(Math.floor(screenH * 0.6), 400), 550);
+        }
+        
+        const x = Math.floor((screenW - width) / 2);
+        const y = Math.max(20, Math.floor((screenH - height) / 2) - 20); // slightly up shift for Dock spacing
+        
+        initialPos = { x, y, width, height };
+      }
+
       return {
         maxZIndex: newZ,
         activeWindowId: appId,
         windows: state.windows.map((w) =>
-          w.id === appId ? { ...w, isOpen: true, isMinimized: false, zIndex: newZ } : w
+          w.id === appId ? { ...w, isOpen: true, isMinimized: false, zIndex: newZ, ...initialPos } : w
         ),
       };
     }

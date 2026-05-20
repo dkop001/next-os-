@@ -1,0 +1,60 @@
+/* Mobile Header Styles */
+@media (max-width: 768px) {
+  .window-rnd {
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  
+  .window-inner {
+    border-radius: 0;
+    border: none;
+  }
+
+  .mobile-header {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 10;
+  }
+
+  .mobile-back-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    margin-left: -8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .mobile-back-btn:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-title {
+    flex: 1;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-right: 24px; /* to offset the back button width and perfectly center the title */
+  }
+
+  .mobile-spacer {
+    width: 24px;
+  }
+
+  /* Make sure content fills the rest */
+  .window-content {
+    height: calc(100% - 48px);
+  }
+}

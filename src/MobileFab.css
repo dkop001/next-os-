@@ -1,0 +1,25 @@
+/* Mobile Recents FAB */
+.mobile-recents-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background: rgba(0, 243, 255, 0.2);
+  border: 1px solid rgba(0, 243, 255, 0.4);
+  color: #00f3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 9000;
+  box-shadow: 0 4px 20px rgba(0, 243, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s;
+}
+
+.mobile-recents-fab:active {
+  transform: scale(0.9);
+  background: rgba(0, 243, 255, 0.3);
+}

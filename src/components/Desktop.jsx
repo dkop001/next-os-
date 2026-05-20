@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useOSStore } from '../store/useOSStore';
+import { useMobile } from '../hooks/useMobile';
 import './Desktop.css';
+import './DesktopMobile.css';
 
 const GRID_X = 100;
 const GRID_Y = 110;
@@ -9,6 +11,7 @@ const OFFSET_Y = 20;
 
 const Desktop = () => {
   const { openApp, windows, updateIconPos } = useOSStore();
+  const isMobile = useMobile();
   const [draggingIconId, setDraggingIconId] = useState(null);
   const [rel, setRel] = useState(null);
   const [tempPos, setTempPos] = useState({ x: 0, y: 0 });
@@ -66,11 +69,11 @@ const Desktop = () => {
   }, [draggingIconId, onMouseMove, onMouseUp]);
 
   return (
-    <div className="desktop">
-      <div className="desktop-icons">
+    <div className={`desktop ${isMobile ? 'mobile' : ''}`}>
+      <div className={isMobile ? "mobile-launcher" : "desktop-icons"}>
         {windows.map((app) => {
           const isDragging = draggingIconId === app.id;
-          const style = {
+          const style = isMobile ? {} : {
             left: isDragging ? tempPos.x : app.iconPos.x,
             top: isDragging ? tempPos.y : app.iconPos.y,
             transition: isDragging ? 'none' : 'left 0.2s, top 0.2s',
@@ -80,10 +83,11 @@ const Desktop = () => {
           return (
             <div 
               key={app.id} 
-              className="desktop-icon" 
+              className={isMobile ? "mobile-icon" : "desktop-icon"}
               style={style}
-              onMouseDown={(e) => onMouseDown(e, app)}
-              onDoubleClick={() => openApp(app.id)}
+              onMouseDown={(e) => !isMobile && onMouseDown(e, app)}
+              onClick={() => isMobile && openApp(app.id)}
+              onDoubleClick={() => !isMobile && openApp(app.id)}
             >
               <div className="icon-visual">
                 {app.id === 'notes' && '📝'}
