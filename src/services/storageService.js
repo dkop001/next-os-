@@ -109,7 +109,7 @@ class StorageService {
             type: 'file',
             name: 'notes_from_mainframe.txt',
             provider: 'cloud',
-            content: 'MEMORANDUM:\nTo: Detective\nFrom: Mainframe Security Command\nSubject: Code Scene Investigations\n\nEnsure that you perform static code scans on all repositories. The neon golden lights are watching.',
+            content: 'MEMORANDUM:\nTo: Lead Systems Architect\nFrom: Mainframe Infrastructure Command\nSubject: Cybernetic AI Systems Uplink\n\nEnsure that all code modules are validated against the cybernetic compilers and that sandbox shields are active in all partitions. The neon golden light guides our logic.',
             updatedAt: new Date().toISOString()
           };
         }
@@ -513,7 +513,7 @@ class StorageService {
         type: 'file',
         name: 'notes_from_mainframe.txt',
         provider: 'cloud',
-        content: 'MEMORANDUM:\nTo: Detective\nFrom: Mainframe Security Command\nSubject: Code Scene Investigations\n\nEnsure that you perform static code scans on all repositories. The neon golden lights are watching.',
+        content: 'MEMORANDUM:\nTo: Lead Systems Architect\nFrom: Mainframe Infrastructure Command\nSubject: Cybernetic AI Systems Uplink\n\nEnsure that all code modules are validated against the cybernetic compilers and that sandbox shields are active in all partitions. The neon golden light guides our logic.',
         updatedAt: new Date().toISOString()
       };
     }

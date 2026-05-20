@@ -593,7 +593,7 @@ const TerminalApp = () => {
       // Type out character by character to create that awesome real AI-terminal streaming cyber vibe!
       const typingPromise = new Promise(resolve => {
         let i = 0;
-        // Speeds up typing speed for longer replies so detective is not kept waiting
+        // Speeds up typing speed for longer replies so developer is not kept waiting
         const charsPerTick = content.length > 500 ? 5 : (content.length > 200 ? 2 : 1);
         
         const tick = () => {
