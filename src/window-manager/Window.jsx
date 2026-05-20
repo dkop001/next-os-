@@ -11,6 +11,7 @@ import ChromeApp from '../apps/ChromeApp';
 import JarvisApp from '../apps/JarvisApp';
 import TerminalApp from '../apps/TerminalApp';
 import IDEApp from '../apps/IDEApp';
+import FileExplorerApp from '../apps/FileExplorerApp';
 
 const Window = ({ app }) => {
   const { focusApp, minimizeApp, maximizeApp, closeApp, updateWindowPos, updateWindowSize, activeWindowId, setWindowLayout } = useOSStore();
@@ -142,6 +143,7 @@ const Window = ({ app }) => {
           {app.content === 'JarvisApp' && <JarvisApp />}
           {app.content === 'TerminalApp' && <TerminalApp />}
           {app.content === 'IDEApp' && <IDEApp />}
+          {app.content === 'FileExplorerApp' && <FileExplorerApp />}
         </div>
       </motion.div>
     </Rnd>

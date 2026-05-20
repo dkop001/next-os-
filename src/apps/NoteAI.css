@@ -548,3 +548,37 @@
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .note-ai-title {
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+  }
+  .note-ai-header {
+    padding: 0.75rem 1rem;
+  }
+  .note-ai-content {
+    padding: 1rem;
+  }
+  .note-textarea {
+    min-height: 180px;
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+  .note-actions-row {
+    flex-direction: column;
+  }
+  .note-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .verdict-score-pill {
+    font-size: 1.75rem;
+    padding: 0.5rem 1rem;
+  }
+  .verdict-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+}

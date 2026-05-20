@@ -92,6 +92,21 @@ export const useOSStore = create((set, get) => ({
       iconPos: { x: 140, y: 20 },
       isPinned: true
     },
+    { 
+      id: 'file-explorer', 
+      title: 'Data Explorer', 
+      content: 'FileExplorerApp', 
+      isOpen: false, 
+      isMinimized: false, 
+      isMaximized: false, 
+      x: 150, 
+      y: 100, 
+      width: 800, 
+      height: 550, 
+      zIndex: 7,
+      iconPos: { x: 140, y: 140 },
+      isPinned: true
+    },
   ],
   activeWindowId: 'chrome',
   maxZIndex: 3,

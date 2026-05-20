@@ -96,6 +96,7 @@ const Desktop = () => {
                 {app.id === 'jarvis' && '🤖'}
                 {app.id === 'terminal' && '💻'}
                 {app.id === 'ide' && '⚡'}
+                {app.id === 'file-explorer' && '🗂️'}
               </div>
               <div className="icon-label">{app.title}</div>
             </div>

@@ -61,6 +61,7 @@ const StartMenu = () => {
                           {app.id === 'jarvis' && '🤖'}
                           {app.id === 'terminal' && '💻'}
                           {app.id === 'ide' && '⚡'}
+                          {app.id === 'file-explorer' && '🗂️'}
                         </div>
                         <div className="app-title">{app.title}</div>
                       </div>

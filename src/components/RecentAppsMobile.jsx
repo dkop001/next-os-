@@ -34,6 +34,7 @@ const RecentAppsMobile = ({ onClose }) => {
                   {app.id === 'jarvis' && '🤖'}
                   {app.id === 'terminal' && '💻'}
                   {app.id === 'ide' && '⚡'}
+                  {app.id === 'file-explorer' && '🗂️'}
                 </div>
                 <div className="recent-app-title">{app.title}</div>
                 <button 
