@@ -79,7 +79,7 @@ export default async function handler(req, res) {
       console.log(`Securely proxying Groq IDE request (qwen-2.5-coder-32b)`);
 
       const payload = {
-        model: 'qwen-2.5-coder-32b',
+        model: 'llama-3.3-70b-versatile',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           ...messages
