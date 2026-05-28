@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Folder, FileText, HardDrive, Cloud, User, LogOut, ChevronRight, Users, Plus, Send, Inbox } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Folder, FileText, HardDrive, Cloud, User, LogOut, Users, Plus, Send, Inbox } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { storageService } from '../services/storageService';
 import { supabaseStorageService } from '../services/supabaseStorageService';
@@ -92,8 +92,8 @@ const FileExplorerApp = () => {
       } else if (currentView === 'personal') {
         const pFiles = await supabaseStorageService.listPersonalFiles();
         setFiles(pFiles);
-      } else if (currentView.startsWith('workspace_')) {
-        const wid = currentView.split('_')[1];
+      } else if (currentView?.startsWith('workspace_')) {
+        const wid = currentView?.split('_')?.[1];
         const wFiles = await supabaseStorageService.listWorkspaceFiles(wid);
         setFiles(wFiles);
       } else if (currentView === 'invites') {
@@ -199,8 +199,8 @@ const FileExplorerApp = () => {
           content = await storageService.readFile(file.path);
         } else if (currentView === 'personal') {
           content = await supabaseStorageService.readPersonalFile(file.name);
-        } else if (currentView.startsWith('workspace_')) {
-          const wid = currentView.split('_')[1];
+        } else if (currentView?.startsWith('workspace_')) {
+          const wid = currentView?.split('_')?.[1];
           content = await supabaseStorageService.readWorkspaceFile(wid, file.name);
         }
         setFileContent(content);
@@ -213,8 +213,8 @@ const FileExplorerApp = () => {
     }
   };
 
-  const formatSize = (bytes) => {
-    if (bytes === 0) return '0 B';
+  const formatSize = (bytes = 0) => {
+    if (!bytes) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -280,8 +280,9 @@ const FileExplorerApp = () => {
     </div>
   );
 
-  const renderMainView = () => (
-    <div className="fe-main-view">
+  const renderMainView = () => {
+    return (
+      <div className="fe-main-view">
       <div className="fe-sidebar">
         <div className="fe-sidebar-header">SYSTEM STORAGE</div>
         <div 
@@ -343,7 +344,7 @@ const FileExplorerApp = () => {
             {currentView === 'local' ? `LOCAL ${currentPath}` : 
              currentView === 'personal' ? 'CLOUD / Personal Drive' : 
              currentView === 'invites' ? 'SYSTEM / Pending Invites' :
-             `WORKSPACE / ${workspaces.find(w => w.id === currentView.split('_')[1])?.name || 'Unknown'}`}
+             `WORKSPACE / ${workspaces.find(w => w.id === currentView?.split('_')?.[1])?.name || 'Unknown'}`}
           </span>
           {loading && <span style={{ marginLeft: 'auto', fontSize: '0.8rem', color: '#00ffaa', animation: 'pulse-dot 1.5s infinite' }}>SCANNING...</span>}
         </div>
@@ -447,9 +448,18 @@ const FileExplorerApp = () => {
         </motion.div>
       )}
     </div>
-  );
+    );
+  };
 
-  return (!session || !profile) ? renderAuthView() : renderMainView();
+  if (!session) {
+    return renderAuthView();
+  }
+
+  if (session && !profile && authMode === 'create_profile') {
+    return renderAuthView();
+  }
+
+  return renderMainView();
 };
 
 export default FileExplorerApp;
