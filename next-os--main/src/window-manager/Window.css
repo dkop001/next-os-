@@ -1,0 +1,312 @@
+/* Rnd Wrapper */
+.window-rnd {
+  display: flex !important;
+  will-change: transform;
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+/* Inner Window Container (handles animations) */
+.window-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--window-shadow);
+  
+  /* Motion transitions for shadow/border only. Transform handled by framer-motion */
+  transition: 
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Focused State */
+.window-inner.focused {
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.15), var(--window-shadow); /* Focused glow */
+  border-color: rgba(0, 255, 255, 0.2);
+}
+
+/* Inactive State */
+.window-inner:not(.focused) {
+  opacity: 0.85; /* Slightly dimmed */
+}
+
+/* Header / Titlebar */
+.window-header {
+  height: 28px;
+  background: rgba(8, 9, 13, 0.4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  user-select: none;
+}
+
+.window-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.window-inner.focused .window-title {
+  color: var(--text-primary);
+}
+
+.window-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.control-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  border-radius: 50%;
+  transition: all 120ms cubic-bezier(0.25, 1, 0.5, 1); /* Hover easing */
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.control-btn.minimize:hover {
+  color: var(--cyber-cyan);
+}
+
+.control-btn.maximize:hover {
+  color: var(--cyber-purple);
+}
+
+.control-btn.close:hover {
+  color: #FF4FD8;
+  background: rgba(255, 79, 216, 0.1);
+}
+
+.window-content {
+  flex: 1;
+  background: transparent;
+  padding: 16px;
+  overflow: auto;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.app-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-dim);
+}
+
+.app-placeholder h2 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.app-placeholder p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+/* Snap Menu */
+.maximize-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.snap-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(16, 19, 26, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10000;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  width: 140px;
+}
+
+.snap-layout-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  height: 40px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+}
+
+.snap-layout-group.quarters {
+  grid-template-rows: repeat(2, 1fr);
+}
+
+.snap-layout-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.snap-layout-item:hover {
+  background: var(--cyber-cyan);
+  transform: scale(1.05);
+}
+
+.window-content.no-padding {
+  padding: 0;
+}
+
+/* Chrome App Styles */
+.chrome-app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-dark);
+}
+
+.chrome-tabs {
+  display: flex;
+  background: rgba(8, 9, 13, 0.6);
+  padding: 8px 8px 0 8px;
+  gap: 4px;
+}
+
+.chrome-tab {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px 8px 0 0;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-width: 100px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--glass-border);
+  border-bottom: none;
+}
+
+.chrome-tab.active {
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+}
+
+.chrome-tab-add {
+  padding: 6px 10px;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chrome-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.chrome-address-bar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 6px 12px;
+  gap: 8px;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 12px;
+}
+
+.chrome-lock {
+  font-size: 0.8rem;
+}
+
+.chrome-address-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.chrome-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #fff;
+  color: #333;
+  border-radius: 8px;
+}
+
+.chrome-search {
+  width: 60%;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: 1px solid #dfe1e5;
+  outline: none;
+  font-size: 1rem;
+}
+
+.chrome-search:hover, .chrome-search:focus {
+  box-shadow: 0 1px 6px rgba(32,33,36,.28);
+  border-color: rgba(223,225,229,0);
+}
+
+/* Resize Handle */
+.resize-handle-br {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: nwse-resize;
+  opacity: 0.4;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.resize-handle-br:hover {
+  color: var(--cyber-cyan);
+  opacity: 1;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 5px var(--cyber-cyan));
+}
+
+.window-inner.focused .resize-handle-br {
+  color: var(--cyber-cyan);
+  opacity: 0.8;
+}
