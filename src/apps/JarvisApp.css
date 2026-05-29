@@ -309,3 +309,91 @@
   cursor: not-allowed;
   transform: none;
 }
+
+@media (max-width: 768px) {
+  .jarvis-header {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .jarvis-orb {
+    width: 40px;
+    height: 40px;
+  }
+
+  .orb-core {
+    font-size: 1.3rem;
+  }
+
+  .orb-ring.r1 { width: 46px; height: 46px; }
+  .orb-ring.r2 { width: 56px; height: 56px; }
+
+  .jarvis-name {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+  }
+
+  .jarvis-status-text {
+    font-size: 0.65rem;
+  }
+
+  .jarvis-messages {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .message-bubble {
+    max-width: 90%;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  .msg-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .jarvis-input-bar {
+    padding: 10px 12px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .jarvis-input {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    max-height: 80px;
+  }
+
+  .jarvis-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .jarvis-header {
+    padding: 10px 12px;
+  }
+
+  .jarvis-messages {
+    padding: 8px;
+  }
+
+  .message-bubble {
+    max-width: 95%;
+    font-size: 0.82rem;
+  }
+
+  .jarvis-input-bar {
+    padding: 8px;
+  }
+
+  .jarvis-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+}

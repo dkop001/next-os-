@@ -26,11 +26,28 @@
   --window-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--cyber-cyan);
+  outline-offset: 2px;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+pre, code, textarea {
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 body {
@@ -39,9 +56,15 @@ body {
   color: var(--text-primary);
   overflow: hidden;
   height: 100vh;
-  width: 100vw;
+  height: 100dvh;
+  width: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+  touch-action: none;
+  -ms-text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -51,8 +74,10 @@ h1, h2, h3, h4, h5, h6 {
 
 #root {
   height: 100%;
+  height: 100dvh;
   width: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 /* Glassmorphism Utility */
@@ -82,6 +107,15 @@ h1, h2, h3, h4, h5, h6 {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--cyber-cyan);
+}
+
+/* Prevent flexbox overflow */
+.flex-child-min-height-0 {
+  min-height: 0;
+}
+
+.flex-child-min-width-0 {
+  min-width: 0;
 }
 
 /* Restrained Glow */

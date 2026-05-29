@@ -1,10 +1,12 @@
 /* Mobile Recents FAB */
 .mobile-recents-fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: max(24px, calc(24px + env(safe-area-inset-bottom, 0px)));
+  right: max(24px, calc(24px + env(safe-area-inset-right, 0px)));
   width: 56px;
   height: 56px;
+  min-width: 48px;
+  min-height: 48px;
   border-radius: 28px;
   background: rgba(0, 243, 255, 0.2);
   border: 1px solid rgba(0, 243, 255, 0.4);

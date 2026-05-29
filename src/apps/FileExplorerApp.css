@@ -558,3 +558,143 @@
 .file-explorer-window .fe-content {
   background: rgba(4, 5, 8, 0.1) !important;
 }
+
+@media (max-width: 768px) {
+  .fe-header {
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .fe-title {
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+  }
+
+  .fe-status-badge {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+
+  .fe-main-view {
+    flex-direction: column;
+  }
+
+  .fe-sidebar {
+    width: 100%;
+    max-height: 160px;
+    overflow-y: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+  }
+
+  .fe-sidebar-header {
+    padding: 10px 12px;
+  }
+
+  .fe-nav-item {
+    padding: 10px 12px;
+  }
+
+  .fe-content {
+    min-height: 0;
+  }
+
+  .fe-path-bar {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .fe-file-grid {
+    padding: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+  }
+
+  .fe-file-item {
+    padding: 10px;
+  }
+
+  .fe-file-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.5rem;
+  }
+
+  .fe-file-name {
+    font-size: 0.75rem;
+  }
+
+  .fe-auth-box {
+    padding: 20px;
+  }
+
+  .fe-auth-title {
+    font-size: 1rem;
+  }
+
+  .fe-viewer-header {
+    padding: 10px 14px;
+  }
+
+  .fe-viewer-content {
+    padding: 12px;
+    font-size: 0.8rem;
+  }
+
+  .fe-invites-container {
+    padding: 12px;
+  }
+
+  .fe-invite-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .fe-empty-state {
+    padding: 40px 16px;
+  }
+
+  .fe-empty-text {
+    font-size: 0.95rem;
+  }
+
+  .fe-upload-header-btn {
+    margin-left: 0;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+
+  .fe-delete-btn {
+    opacity: 1;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fe-file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .fe-file-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .fe-file-name {
+    font-size: 0.7rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .fe-header {
+    padding: 6px 10px;
+  }
+}

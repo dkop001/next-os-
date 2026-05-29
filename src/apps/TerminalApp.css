@@ -162,3 +162,65 @@
   }
 }
 
+@media (max-width: 768px) {
+  .terminal-app-container {
+    padding: 6px;
+  }
+
+  .mount-overlay-box {
+    width: 92%;
+    padding: 18px 16px;
+  }
+
+  .mount-overlay-box h3 {
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .mount-overlay-box p {
+    font-size: 11px;
+    margin-bottom: 18px;
+  }
+
+  .mount-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mount-btn, .mount-cancel {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .terminal-app-container ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminal-app-container {
+    padding: 4px;
+  }
+
+  .mount-overlay-box {
+    padding: 14px 12px;
+  }
+
+  .mount-overlay-box h3 {
+    font-size: 12px;
+  }
+
+  .mount-overlay-box p {
+    font-size: 10px;
+    margin-bottom: 14px;
+  }
+
+  .mount-btn, .mount-cancel {
+    font-size: 11px;
+    padding: 8px 12px;
+  }
+}
+

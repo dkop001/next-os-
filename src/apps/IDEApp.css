@@ -1018,3 +1018,178 @@
   margin: 6px 0;
   max-width: 100%;
 }
+
+@media (max-width: 768px) {
+  .ide-app-container {
+    font-size: 14px;
+  }
+
+  .ide-topbar {
+    height: 34px;
+    padding: 0 8px;
+    font-size: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ide-topbar-left {
+    gap: 8px;
+  }
+
+  .ide-menu-bar {
+    gap: 6px;
+  }
+
+  .ide-menu-item {
+    padding: 4px 6px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .ide-topbar-center {
+    display: none;
+  }
+
+  .ide-topbar-btn {
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+
+  .ide-activity-bar {
+    width: 40px;
+  }
+
+  .ide-activity-btn {
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .ide-sidebar {
+    width: 200px !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+  }
+
+  .ide-sidebar-header {
+    padding: 8px 10px;
+  }
+
+  .ide-sidebar-content {
+    padding: 4px 2px;
+  }
+
+  .ide-tree-node {
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+
+  .ide-ai-panel {
+    width: 260px !important;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+  }
+
+  .ide-tab {
+    font-size: 11px;
+    padding: 0 8px;
+  }
+
+  .ide-tab-bar {
+    height: 32px;
+  }
+
+  .ide-tab {
+    height: 28px;
+  }
+
+  .ide-bottom-panel {
+    height: 120px;
+  }
+
+  .ide-palette-box {
+    width: 95%;
+    max-width: none;
+  }
+
+  .ide-palette-list {
+    max-height: 200px;
+  }
+
+  .ide-ai-messages {
+    padding: 8px;
+  }
+
+  .ide-ai-msg {
+    max-width: 95%;
+    font-size: 12px;
+  }
+
+  .ide-ai-input-area {
+    padding: 8px;
+    flex-wrap: wrap;
+  }
+
+  .ide-ai-textbox {
+    font-size: 12px;
+    height: 32px;
+  }
+
+  .ide-ai-send-btn {
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .ide-ai-shortcuts {
+    padding: 6px 8px;
+  }
+
+  .ide-ai-shortcut-chip {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .ide-status-bar {
+    height: 22px;
+    font-size: 10px;
+    padding: 0 6px;
+  }
+
+  .ide-status-left, .ide-status-right {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ide-activity-bar {
+    width: 36px;
+  }
+
+  .ide-activity-btn {
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .ide-sidebar {
+    width: 180px !important;
+  }
+
+  .ide-ai-panel {
+    width: 100% !important;
+  }
+
+  .ide-bottom-panel {
+    height: 100px;
+  }
+
+  .ide-palette-overlay {
+    padding-top: 40px;
+  }
+}
