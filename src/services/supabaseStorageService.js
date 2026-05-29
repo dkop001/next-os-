@@ -115,5 +115,16 @@ export const supabaseStorageService = {
   uploadWorkspaceFile: async (workspaceId, fileName, content) => {
     const { error } = await supabase.storage.from('workspace-drives').upload(`${workspaceId}/${fileName}`, content, { upsert: true });
     if (error) throw error;
+  },
+
+  deletePersonalFile: async (fileName) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.storage.from('personal-drives').remove([`${user.id}/${fileName}`]);
+    if (error) throw error;
+  },
+
+  deleteWorkspaceFile: async (workspaceId, fileName) => {
+    const { error } = await supabase.storage.from('workspace-drives').remove([`${workspaceId}/${fileName}`]);
+    if (error) throw error;
   }
 };

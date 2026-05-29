@@ -237,4 +237,8 @@ export const useOSStore = create((set, get) => ({
       })
     };
   }),
+
+  filePicker: { active: false, onPick: null },
+  startFilePicker: (onPick) => set({ filePicker: { active: true, onPick } }),
+  cancelFilePicker: () => set({ filePicker: { active: false, onPick: null } }),
 }));

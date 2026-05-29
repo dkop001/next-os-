@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Folder, FileText, HardDrive, Cloud, User, LogOut, Users, Plus, Send, Inbox } from 'lucide-react';
+import { Folder, FileText, HardDrive, Cloud, User, LogOut, Users, Plus, Send, Inbox, Trash2, X } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 import { storageService } from '../services/storageService';
 import { supabaseStorageService } from '../services/supabaseStorageService';
+import { useOSStore } from '../store/useOSStore';
 import './FileExplorerApp.css';
 
 const FileExplorerApp = () => {
+  const { filePicker, cancelFilePicker } = useOSStore();
+  const fileInputRef = useRef(null);
+
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [authMode, setAuthMode] = useState('login'); // login, signup, create_profile
@@ -192,6 +196,11 @@ const FileExplorerApp = () => {
     if (file.type === 'dir' && currentView === 'local') {
       setCurrentPath(file.path || currentPath + '/' + file.name);
     } else if (file.type === 'file') {
+      if (filePicker.active && filePicker.onPick) {
+        filePicker.onPick(file);
+        cancelFilePicker();
+        return;
+      }
       setLoading(true);
       try {
         let content = '';
@@ -210,6 +219,75 @@ const FileExplorerApp = () => {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length === 0) return;
+
+    const maxBytes = 50 * 1024 * 1024;
+    for (const file of selectedFiles) {
+      if (file.size > maxBytes) {
+        alert(`File "${file.name}" exceeds the 50MB size limit.`);
+        return;
+      }
+    }
+
+    setLoading(true);
+    try {
+      for (const file of selectedFiles) {
+        if (currentView === 'local') {
+          await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+              try {
+                const fullPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
+                await storageService.writeFile(fullPath, event.target.result);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+            };
+            reader.onerror = () => reject(new Error('File read error'));
+            reader.readAsText(file);
+          });
+        } else if (currentView === 'personal') {
+          await supabaseStorageService.uploadPersonalFile(file.name, file);
+        } else if (currentView?.startsWith('workspace_')) {
+          const wid = currentView.split('_')[1];
+          await supabaseStorageService.uploadWorkspaceFile(wid, file.name, file);
+        }
+      }
+      await loadDirectory();
+    } catch (err) {
+      console.error('File upload error:', err);
+      alert('Upload failed: ' + err.message);
+    } finally {
+      setLoading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteFile = async (file) => {
+    if (!confirm(`Are you sure you want to delete "${file.name}"?`)) return;
+    setLoading(true);
+    try {
+      if (currentView === 'local') {
+        const fullPath = file.path || (currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`);
+        await storageService.deleteFile(fullPath);
+      } else if (currentView === 'personal') {
+        await supabaseStorageService.deletePersonalFile(file.name);
+      } else if (currentView?.startsWith('workspace_')) {
+        const wid = currentView?.split('_')?.[1];
+        await supabaseStorageService.deleteWorkspaceFile(wid, file.name);
+      }
+      await loadDirectory();
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete file: ' + e.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -283,6 +361,13 @@ const FileExplorerApp = () => {
   const renderMainView = () => {
     return (
       <div className="fe-main-view">
+        <input
+          type="file"
+          multiple
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          style={{ display: 'none' }}
+        />
       <div className="fe-sidebar">
         <div className="fe-sidebar-header">SYSTEM STORAGE</div>
         <div 
@@ -339,6 +424,14 @@ const FileExplorerApp = () => {
       </div>
 
       <div className="fe-content">
+        {filePicker.active && (
+          <div className="fe-picker-banner">
+            <span className="fe-picker-banner-text">🛡️ CHOOSE FILE FOR IDE CONTEXT</span>
+            <button className="fe-picker-banner-cancel" onClick={cancelFilePicker}>
+              <X size={14} style={{ marginRight: '4px' }} /> CANCEL PICKER
+            </button>
+          </div>
+        )}
         <div className="fe-path-bar">
           <span className="fe-path-text">
             {currentView === 'local' ? `LOCAL ${currentPath}` : 
@@ -346,6 +439,15 @@ const FileExplorerApp = () => {
              currentView === 'invites' ? 'SYSTEM / Pending Invites' :
              `WORKSPACE / ${workspaces?.find(w => w.id === currentView?.split('_')?.[1])?.name || 'Unknown'}`}
           </span>
+          {currentView !== 'invites' && (
+            <button 
+              className="fe-upload-header-btn" 
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload files from local host to current volume"
+            >
+              <Plus size={12} style={{ marginRight: '4px' }} /> UPLOAD
+            </button>
+          )}
           {loading && <span style={{ marginLeft: 'auto', fontSize: '0.8rem', color: '#00ffaa', animation: 'pulse-dot 1.5s infinite' }}>SCANNING...</span>}
         </div>
         
@@ -382,11 +484,31 @@ const FileExplorerApp = () => {
                 {file.type === 'dir' ? <Folder className="fe-file-icon" /> : <FileText className="fe-file-icon" />}
                 <div className="fe-file-name" title={file.name}>{file.name}</div>
                 <div className="fe-file-meta">{file.type === 'dir' ? 'Directory' : formatSize(file.size)}</div>
+                {file.type === 'file' && (
+                  <button 
+                    className="fe-delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteFile(file);
+                    }}
+                    title="Delete file"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
               </motion.div>
             ))}
             {files.length === 0 && !loading && (
-              <div style={{ color: 'rgba(0, 243, 255, 0.4)', gridColumn: '1 / -1', textAlign: 'center', marginTop: '40px' }}>
-                NO DATA CLUSTERS DETECTED
+              <div className="fe-empty-state" style={{ gridColumn: '1 / -1' }}>
+                <div 
+                  className="fe-empty-icon-container"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Click to select files to upload"
+                >
+                  <Plus className="fe-empty-plus-icon" size={32} />
+                </div>
+                <div className="fe-empty-text">Add files</div>
+                <div className="fe-empty-subtext">Click the plus icon to upload files up to 50MB</div>
               </div>
             )}
           </div>

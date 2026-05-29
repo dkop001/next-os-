@@ -3,6 +3,7 @@ import Editor from '@monaco-editor/react';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { storageService } from '../services/storageService';
+import { supabaseStorageService } from '../services/supabaseStorageService';
 import { useOSStore } from '../store/useOSStore';
 import 'xterm/css/xterm.css';
 import './IDEApp.css';
@@ -40,7 +41,7 @@ const getLanguageFromExtension = (filename) => {
 };
 
 export default function IDEApp() {
-  const { windows, openApp } = useOSStore();
+  const { windows, openApp, startFilePicker } = useOSStore();
 
   // Layout States
   const [sidebarWidth, setSidebarWidth] = useState(250);
@@ -101,12 +102,19 @@ export default function IDEApp() {
   const [selectedAIProvider, setSelectedAIProvider] = useState('gemini'); // 'gemini', 'groq'
   const [selectedGeminiModel, setSelectedGeminiModel] = useState('gemini-2.5-flash');
   const [aiMessages, setAiMessages] = useState([
-    { role: 'assistant', content: 'Greetings. I am the J.K.C Cybernetic AI Code Agent—your elite, integrated software engineering copilot. I can CREATE, MODIFY, and DELETE files in your workspace directly. Tell me what changes you want me to make, or select a file below to mention it as context!' }
+    { role: 'assistant', content: 'Greetings. I am the J.K.C Cybernetic AI Code Agent — your integrated engineering copilot. I can READ, CREATE, MODIFY, and DELETE files. I will always ask for your approval before writing any changes.' }
   ]);
   const [aiInputText, setAiInputText] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [workspaceFiles, setWorkspaceFiles] = useState([]);
   const [mentionedFile, setMentionedFile] = useState('');
+
+  // Agent confirmation queue
+  const [agentQueue, setAgentQueue] = useState([]); // [{ id, type, path, content }]
+
+  // Model dropdown
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
+  const modelDropdownRef = useRef(null);
 
   // Status Bar lines/cols
   const [cursorPositionLeft, setCursorPositionLeft] = useState({ line: 1, column: 1 });
@@ -752,116 +760,136 @@ export default function IDEApp() {
     }
   };
 
+  // Parse agent response and queue actions for user approval
   const executeAgentFileActions = async (text) => {
-    // 1. Parse create or modify actions: <file_action type="(create|modify)" path="([^"]+)">([\s\S]*?)<\/file_action>
+    const pending = [];
+
+    // Parse create/modify actions
     const writeRegex = /<file_action\s+type="(create|modify)"\s+path="([^"]+)">([\s\S]*?)<\/file_action>/gi;
     let match;
-    const actionsExecuted = [];
-
     while ((match = writeRegex.exec(text)) !== null) {
-      const type = match[1].toLowerCase();
-      const path = match[2].trim();
-      const content = match[3];
-      
-      try {
-        console.log(`🤖 Agent executing ${type} for file: ${path}`);
-        await ensureDirectoryExists(path);
-        await storageService.writeFile(path, content);
-        
-        actionsExecuted.push(`🤖 **System Alert**: Automated file action executed. ${type === 'create' ? 'Created' : 'Modified'} file: \`${path}\``);
-
-        // Update session cache
-        setFileContents(prev => ({
-          ...prev,
-          [path]: content
-        }));
-
-        // Monaco editor is automatically updated since value is bound to fileContents
-      } catch (e) {
-        console.error(`Agent failed to execute ${type} for ${path}:`, e);
-        actionsExecuted.push(`❌ **System Error**: Agent failed to ${type} file \`${path}\`: ${e.message}`);
-      }
+      pending.push({
+        id: crypto.randomUUID(),
+        type: match[1].toLowerCase(),
+        path: match[2].trim(),
+        content: match[3]
+      });
     }
 
-    // 2. Parse delete actions: <file_action type="delete" path="([^"]+)"\s*\/>
+    // Parse delete actions
     const deleteRegex = /<file_action\s+type="delete"\s+path="([^"]+)"\s*\/>/gi;
     let delMatch;
     while ((delMatch = deleteRegex.exec(text)) !== null) {
-      const path = delMatch[1].trim();
-      try {
-        console.log(`🤖 Agent executing delete for file: ${path}`);
-        await storageService.deleteFile(path);
-
-        actionsExecuted.push(`🤖 **System Alert**: Automated file action executed. Deleted file: \`${path}\``);
-
-        // Clean up editor state and cache if open
-        setFileContents(prev => {
-          const next = { ...prev };
-          delete next[path];
-          return next;
-        });
-
-        if (activeFileLeft === path) {
-          setActiveFileLeft('');
-        }
-        if (activeFileRight === path) {
-          setActiveFileRight('');
-        }
-        
-        // Remove from open files/tabs list
-        setOpenFilesLeft(prev => prev.filter(t => t !== path));
-        setOpenFilesRight(prev => prev.filter(t => t !== path));
-
-      } catch (e) {
-        console.error(`Agent failed to delete file ${path}:`, e);
-        actionsExecuted.push(`❌ **System Error**: Agent failed to delete file \`${path}\`: ${e.message}`);
-      }
+      pending.push({
+        id: crypto.randomUUID(),
+        type: 'delete',
+        path: delMatch[1].trim(),
+        content: null
+      });
     }
 
-    if (actionsExecuted.length > 0) {
-      // Append system alerts to chat
-      setAiMessages(prev => [
-        ...prev,
-        ...actionsExecuted.map(msg => ({ role: 'assistant', content: msg }))
-      ]);
-      // Refresh tree and workspace files list
+    if (pending.length > 0) {
+      setAgentQueue(pending);
+    }
+  };
+
+  // Execute a single approved action from the queue
+  const executeApprovedAction = async (action) => {
+    try {
+      if (action.type === 'delete') {
+        await storageService.deleteFile(action.path);
+        setFileContents(prev => { const n = { ...prev }; delete n[action.path]; return n; });
+        setOpenFilesLeft(prev => prev.filter(t => t !== action.path));
+        setOpenFilesRight(prev => prev.filter(t => t !== action.path));
+        if (activeFileLeft === action.path) setActiveFileLeft('');
+        if (activeFileRight === action.path) setActiveFileRight('');
+        setAiMessages(prev => [...prev, { role: 'assistant', content: `✅ Deleted \`${action.path}\`` }]);
+      } else {
+        await ensureDirectoryExists(action.path);
+        await storageService.writeFile(action.path, action.content);
+        setFileContents(prev => ({ ...prev, [action.path]: action.content }));
+        setAiMessages(prev => [...prev, { role: 'assistant', content: `✅ ${action.type === 'create' ? 'Created' : 'Modified'} \`${action.path}\`` }]);
+      }
       await refreshExpandedDirectories();
       await scanWorkspaceFiles();
+    } catch (e) {
+      setAiMessages(prev => [...prev, { role: 'assistant', content: `❌ Failed to ${action.type} \`${action.path}\`: ${e.message}` }]);
     }
+    setAgentQueue(prev => prev.filter(a => a.id !== action.id));
+  };
+
+  const rejectAgentAction = (id) => {
+    const action = agentQueue.find(a => a.id === id);
+    if (action) setAiMessages(prev => [...prev, { role: 'assistant', content: `⏭ Skipped: \`${action.path}\`` }]);
+    setAgentQueue(prev => prev.filter(a => a.id !== id));
+  };
+
+  const approveAllAgentActions = async () => {
+    for (const action of [...agentQueue]) {
+      await executeApprovedAction(action);
+    }
+  };
+
+  // Open the File Explorer in picker mode and load selected file in IDE
+  const handleOpenViaExplorer = () => {
+    startFilePicker((file) => {
+      openFileInPane(file.path);
+      useOSStore.getState().openApp('ide');
+    });
+    openApp('file-explorer');
   };
 
   const handleSendMessageToAI = async (shortcutPrompt = '') => {
     const promptToSend = shortcutPrompt || aiInputText;
     if (!promptToSend.trim()) return;
 
-    // Append user message to UI
     const newUserMsg = { role: 'user', content: promptToSend };
     setAiMessages(prev => [...prev, newUserMsg]);
     setAiInputText('');
     setIsAiLoading(true);
 
     try {
-      // 1. Read mentioned file content if any
+      // Build rich workspace context: read all open files + mentioned file
       let contextString = '';
-      if (mentionedFile) {
+
+      // Active open files context
+      const openPaths = [...new Set([activeFileLeft, activeFileRight].filter(Boolean))];
+      for (const fp of openPaths) {
         try {
-          const fileContent = await storageService.readFile(mentionedFile);
-          contextString = `\n\n[CONTEXT: The developer has explicitly mentioned the file "${mentionedFile}". Here is its current content:\n\`\`\`\n${fileContent}\n\`\`\`]`;
+          const content = fileContents[fp] || await storageService.readFile(fp);
+          const lang = getLanguageFromExtension(fp);
+          contextString += `\n\n[OPEN FILE: "${fp}"\n\`\`\`${lang}\n${content}\n\`\`\`]`;
+        } catch (_) {}
+      }
+
+      // Explicitly mentioned file context
+      if (mentionedFile && !openPaths.includes(mentionedFile)) {
+        try {
+          const content = await storageService.readFile(mentionedFile);
+          contextString += `\n\n[MENTIONED FILE: "${mentionedFile}"\n\`\`\`\n${content}\n\`\`\`]`;
         } catch (e) {
-          console.warn("Failed to read mentioned file context:", e);
+          console.warn('Failed to read mentioned file context:', e);
         }
       }
 
-      const headers = { 'Content-Type': 'application/json' };
+      // System prompt instructing the agent about file action format & approval flow
+      const systemNote = `You are a powerful AI code agent with full read/write access to the workspace filesystem.
+To modify files, use XML tags in your response:
+  Create/Modify: <file_action type="create" path="/path/to/file">file content here</file_action>
+  Delete:        <file_action type="delete" path="/path/to/file" />
+Each action will be shown to the user for individual approval before execution. Be precise and complete.`;
 
       const res = await fetch('/api/ide-ai', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: selectedAIProvider,
           model: selectedAIProvider === 'gemini' ? selectedGeminiModel : 'qwen-2.5-coder-32b',
           messages: [
-            ...aiMessages.filter(m => m.content && !m.content.startsWith('[❌') && !m.content.startsWith('🤖') && !m.content.startsWith('❌')).map(m => ({ role: m.role, content: m.content })),
+            { role: 'user', content: systemNote },
+            ...aiMessages
+              .filter(m => m.content && !m.content.startsWith('✅') && !m.content.startsWith('⏭') && !m.content.startsWith('❌'))
+              .map(m => ({ role: m.role, content: m.content })),
             { role: 'user', content: promptToSend + contextString }
           ]
         })
@@ -873,36 +901,32 @@ export default function IDEApp() {
       }
 
       const data = await res.json();
-      const assistantContent = data.choices?.[0]?.message?.content || 'No returns synchronized.';
+      const assistantContent = data.choices?.[0]?.message?.content || 'No response received.';
 
-      // Simulate streaming typewriter effect
-      let printedText = '';
-      const newAssistantMsg = { role: 'assistant', content: '' };
-      setAiMessages(prev => [...prev, newAssistantMsg]);
-      
-      const charRate = assistantContent.length > 300 ? 5 : 2;
-      let charIdx = 0;
-
-      const typeTimer = setInterval(() => {
-        if (charIdx < assistantContent.length) {
-          printedText += assistantContent.substring(charIdx, charIdx + charRate);
-          charIdx += charRate;
+      // Streaming typewriter effect
+      let printed = '';
+      setAiMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      const rate = assistantContent.length > 300 ? 6 : 2;
+      let idx = 0;
+      const timer = setInterval(() => {
+        if (idx < assistantContent.length) {
+          printed += assistantContent.substring(idx, idx + rate);
+          idx += rate;
           setAiMessages(prev => {
             const list = [...prev];
-            list[list.length - 1] = { role: 'assistant', content: printedText };
+            list[list.length - 1] = { role: 'assistant', content: printed };
             return list;
           });
         } else {
-          clearInterval(typeTimer);
+          clearInterval(timer);
           setIsAiLoading(false);
-          // Execute any automatic file actions in the response
           executeAgentFileActions(assistantContent);
         }
       }, 15);
 
     } catch (err) {
       console.error(err);
-      setAiMessages(prev => [...prev, { role: 'assistant', content: `[❌ CONNECTION FAILED: ${err.message}]` }]);
+      setAiMessages(prev => [...prev, { role: 'assistant', content: `❌ ${err.message}` }]);
       setIsAiLoading(false);
     }
   };
@@ -1296,10 +1320,13 @@ export default function IDEApp() {
                     <span className="ide-tab-empty-logo">⚡</span>
                     <h3>J.K.C CYBERNETIC INTEGRATED ENVIRONMENT</h3>
                     <p style={{ maxWidth: '380px', fontSize: '12px', color: '#718096', lineHeight: 1.6 }}>
-                      No active source files loaded. Click elements in the file explorer sidebar or initialize a welcome log to start coding.
+                      No active source files loaded. Open a file from the explorer or pick one from the File Explorer.
                     </p>
                     <button className="ide-tab-empty-btn" onClick={() => openFileInPane('/documents/welcome.txt', 'left')}>
-                      Load welcome.txt Node
+                      Load welcome.txt
+                    </button>
+                    <button className="ide-tab-empty-btn" style={{ marginTop: '8px', borderColor: 'rgba(255,0,255,0.4)', color: 'var(--ide-magenta)' }} onClick={handleOpenViaExplorer}>
+                      📂 Open via File Explorer
                     </button>
                   </div>
                 )}
@@ -1421,123 +1448,157 @@ export default function IDEApp() {
           />
         )}
 
-        {/* 4. RIGHT SIDEBAR (AI AGENT CO-PILOT) */}
+        {/* 4. RIGHT SIDEBAR — MINIMAL AI AGENT */}
         <div className="ide-ai-panel" style={{ width: `${rightPanelWidth}px`, display: showRightPanel ? 'flex' : 'none' }}>
+
+          {/* Slim header */}
           <div className="ide-ai-header">
-            <span className="ide-ai-title">🤖 CYBERNETIC AI CODE AGENT</span>
-            <span className="ide-sidebar-icon-btn" onClick={() => setShowRightPanel(false)}>×</span>
-          </div>
-
-          {/* AI Settings & Context Configuration */}
-          <div className="ide-ai-key-inputs">
-            <div className="ide-ai-key-input-row">
-              <span className="ide-search-label">AI ENGINE</span>
-              <select 
-                value={selectedAIProvider} 
-                onChange={(e) => setSelectedAIProvider(e.target.value)}
-                className="ide-ai-model-select"
-              >
-                <option value="gemini">1. Google Gemini</option>
-                <option value="groq">2. Groq AI</option>
-              </select>
-            </div>
-
-            {selectedAIProvider === 'gemini' ? (
-              <div className="ide-ai-key-input-row">
-                <span className="ide-search-label">MODEL CONFIG</span>
-                <select 
-                  value={selectedGeminiModel} 
-                  onChange={(e) => setSelectedGeminiModel(e.target.value)}
-                  className="ide-ai-model-select"
-                >
-                  <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-                  <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-                  <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-                  <option value="gemini-1.5-pro">gemini-1.5-pro</option>
-                </select>
-              </div>
-            ) : (
-              <div className="ide-ai-key-input-row">
-                <span className="ide-search-label">MODEL CONFIG</span>
-                <select className="ide-ai-model-select" disabled>
-                  <option>qwen-2.5-coder-32b</option>
-                </select>
-              </div>
-            )}
-
-            {/* MENTION A FILE SELECTOR */}
-            <div className="ide-ai-key-input-row">
-              <span className="ide-search-label">MENTIONED FILE</span>
-              <select 
-                value={mentionedFile} 
-                onChange={(e) => setMentionedFile(e.target.value)}
-                className="ide-ai-model-select"
-                style={{ border: mentionedFile ? '1px solid var(--ide-cyan)' : '1px solid var(--ide-border)', boxShadow: mentionedFile ? '0 0 8px rgba(0, 243, 255, 0.2)' : 'none' }}
-              >
-                <option value="">-- No File Mentioned --</option>
-                {workspaceFiles.map(path => {
-                  const parts = path.split('/');
-                  const name = parts[parts.length - 1];
-                  const provider = parts[1]; // local, cloud, documents, system etc.
-                  return (
-                    <option key={path} value={path}>
-                      📁 {name} ({provider})
-                    </option>
-                  );
-                })}
-              </select>
+            <span className="ide-ai-title">✦ AI AGENT</span>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span
+                className="ide-sidebar-icon-btn"
+                title="Open file from Explorer"
+                onClick={handleOpenViaExplorer}
+                style={{ fontSize: '14px' }}
+              >📂</span>
+              <span className="ide-sidebar-icon-btn" onClick={() => setShowRightPanel(false)}>×</span>
             </div>
           </div>
 
-          {/* AI Dialogue panel messages */}
-          <div className="ide-ai-messages">
+          {/* Context chip: mentioned file — compact */}
+          <div className="ide-ai-context-bar">
+            <select
+              value={mentionedFile}
+              onChange={(e) => setMentionedFile(e.target.value)}
+              className="ide-ai-context-select"
+              title="Mention a file for context"
+            >
+              <option value="">📎 No file context</option>
+              {workspaceFiles.map(path => {
+                const name = path.split('/').pop();
+                return <option key={path} value={path}>📄 {name}</option>;
+              })}
+            </select>
+          </div>
+
+          {/* Messages — dominant section */}
+          <div className="ide-ai-messages" id="ide-ai-messages-scroll">
             {aiMessages.map((msg, idx) => (
               <div key={idx} className={`ide-ai-msg ${msg.role}`}>
-                <span className="ide-ai-msg-header" style={{ color: msg.role === 'user' ? 'var(--ide-green)' : 'var(--ide-blue)' }}>
-                  {msg.role === 'user' ? '👤 DEVELOPER' : '🤖 CODE AGENT'}
+                <span className="ide-ai-msg-role">
+                  {msg.role === 'user' ? '▸ You' : '✦ Agent'}
                 </span>
-                <div style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                <div className="ide-ai-msg-body">
                   {msg.content}
                 </div>
               </div>
             ))}
             {isAiLoading && (
               <div className="ide-ai-msg assistant">
-                <span className="ide-ai-msg-header" style={{ color: 'var(--ide-blue)' }}>🤖 CODE AGENT</span>
-                <span className="cyber-typewriter">Analyzing codebase & streaming logic... ⠋</span>
+                <span className="ide-ai-msg-role">✦ Agent</span>
+                <div className="ide-ai-thinking">
+                  <span className="ide-ai-thinking-dot" />
+                  <span className="ide-ai-thinking-dot" />
+                  <span className="ide-ai-thinking-dot" />
+                </div>
               </div>
             )}
           </div>
 
-          {/* Context Injection Chips */}
-          <div className="ide-ai-shortcuts">
-            <span className="ide-ai-shortcut-chip" onClick={() => handleShortcutAIAction('explain')}>
-              Explain Active Code
-            </span>
-            <span className="ide-ai-shortcut-chip" onClick={() => handleShortcutAIAction('refactor')}>
-              Refactor Code
-            </span>
-            <span className="ide-ai-shortcut-chip" onClick={() => handleShortcutAIAction('bugs')}>
-              Detect Code Bugs
-            </span>
+          {/* Agent action confirmation queue */}
+          {agentQueue.length > 0 && (
+            <div className="ide-agent-queue">
+              <div className="ide-agent-queue-header">
+                <span>⚡ {agentQueue.length} pending action{agentQueue.length > 1 ? 's' : ''}</span>
+                <button className="ide-agent-approve-all" onClick={approveAllAgentActions}>Approve All</button>
+              </div>
+              {agentQueue.map((action) => (
+                <div key={action.id} className="ide-agent-action-card">
+                  <div className="ide-agent-action-info">
+                    <span className={`ide-agent-action-type ide-agent-type-${action.type}`}>
+                      {action.type === 'delete' ? '🗑' : action.type === 'create' ? '✚' : '✎'}
+                      {' '}{action.type.toUpperCase()}
+                    </span>
+                    <span className="ide-agent-action-path" title={action.path}>
+                      {action.path.split('/').pop()}
+                    </span>
+                  </div>
+                  <div className="ide-agent-action-btns">
+                    <button className="ide-agent-btn-approve" onClick={() => executeApprovedAction(action)}>✓</button>
+                    <button className="ide-agent-btn-reject" onClick={() => rejectAgentAction(action.id)}>✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Quick action chips */}
+          <div className="ide-ai-chips">
+            <button className="ide-ai-chip" onClick={() => handleShortcutAIAction('explain')}>Explain</button>
+            <button className="ide-ai-chip" onClick={() => handleShortcutAIAction('refactor')}>Refactor</button>
+            <button className="ide-ai-chip" onClick={() => handleShortcutAIAction('bugs')}>Find Bugs</button>
           </div>
 
-          {/* Chat dialog textbox */}
+          {/* Input row */}
           <div className="ide-ai-input-area">
-            <input
-              type="text"
+            <textarea
               className="ide-ai-textbox"
-              placeholder="Ask AI co-pilot code logic..."
+              placeholder="Ask anything about your code..."
               value={aiInputText}
+              rows={2}
               onChange={(e) => setAiInputText(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSendMessageToAI();
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessageToAI();
+                }
               }}
             />
-            <button className="ide-ai-send-btn" onClick={() => handleSendMessageToAI()}>
-              SEND
+            <button
+              className="ide-ai-send-btn"
+              onClick={() => handleSendMessageToAI()}
+              disabled={isAiLoading}
+            >
+              {isAiLoading ? '…' : '↑'}
             </button>
           </div>
+
+          {/* Sleek model selector — below input */}
+          <div className="ide-model-bar" ref={modelDropdownRef}>
+            <button
+              className="ide-model-bar-btn"
+              onClick={() => setShowModelDropdown(p => !p)}
+            >
+              <span className="ide-model-bar-indicator" />
+              {selectedAIProvider === 'gemini' ? selectedGeminiModel : 'qwen-2.5-coder'}
+              <span className="ide-model-bar-caret">{showModelDropdown ? '▲' : '▼'}</span>
+            </button>
+
+            {showModelDropdown && (
+              <div className="ide-model-dropdown">
+                <div className="ide-model-group-label">Google Gemini</div>
+                {['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-1.5-flash', 'gemini-1.5-pro'].map(m => (
+                  <button
+                    key={m}
+                    className={`ide-model-option ${selectedAIProvider === 'gemini' && selectedGeminiModel === m ? 'active' : ''}`}
+                    onClick={() => { setSelectedAIProvider('gemini'); setSelectedGeminiModel(m); setShowModelDropdown(false); }}
+                  >
+                    {m}
+                    {selectedAIProvider === 'gemini' && selectedGeminiModel === m && <span className="ide-model-check">✓</span>}
+                  </button>
+                ))}
+                <div className="ide-model-group-label" style={{ marginTop: '6px' }}>Groq</div>
+                <button
+                  className={`ide-model-option ${selectedAIProvider === 'groq' ? 'active' : ''}`}
+                  onClick={() => { setSelectedAIProvider('groq'); setShowModelDropdown(false); }}
+                >
+                  qwen-2.5-coder-32b
+                  {selectedAIProvider === 'groq' && <span className="ide-model-check">✓</span>}
+                </button>
+              </div>
+            )}
+          </div>
+
         </div>
 
       </div>

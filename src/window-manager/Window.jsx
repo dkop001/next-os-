@@ -72,7 +72,7 @@ const Window = ({ app }) => {
       className={`window-rnd ${isFocused ? 'focused' : ''} ${app.isMinimized ? 'minimized' : ''}`}
     >
       <motion.div 
-        className={`window-inner ${isFocused ? 'focused' : ''}`}
+        className={`window-inner ${isFocused ? 'focused' : ''} ${app.content === 'FileExplorerApp' ? 'file-explorer-window' : ''}`}
         onMouseDownCapture={() => focusApp(app.id)}
         initial="closed"
         animate={app.isMinimized ? "minimized" : "open"}
