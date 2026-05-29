@@ -152,9 +152,9 @@ const JarvisApp = () => {
       let replyContent;
       if (msg.tool_calls?.length > 0) {
         const call = msg.tool_calls[0];
-        let args;
-        try { args = JSON.parse(call.function.arguments); }
-        catch { args = {}; }
+        let args = call.function.arguments;
+        if (typeof args === 'string') { try { args = JSON.parse(args); } catch { args = {}; } }
+        if (typeof args !== 'object' || args === null) args = {};
         replyContent = executeToolCall(call.function.name, args);
       } else {
         replyContent = msg.content || "I have nothing to add at this moment.";

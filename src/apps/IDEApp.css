@@ -247,6 +247,9 @@
   overflow: hidden;
   height: 100%;
   position: relative;
+  min-width: 160px;
+  max-width: 350px;
+  flex-shrink: 0;
 }
 
 .ide-sidebar-header {
@@ -441,6 +444,7 @@
 /* 3. Editor Workspace (Center Split) */
 .ide-editor-workspace {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -575,7 +579,7 @@
 /* 4. Bottom Terminal Area */
 .ide-bottom-panel {
   background: rgba(5, 8, 16, 0.98);
-  border-t: 1px solid var(--ide-border);
+  border-top: 1px solid var(--ide-border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -725,6 +729,9 @@
   overflow: hidden;
   height: 100%;
   position: relative;
+  min-width: 200px;
+  max-width: 400px;
+  flex-shrink: 0;
 }
 
 .ide-ai-header {

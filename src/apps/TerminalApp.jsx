@@ -347,10 +347,6 @@ const TerminalApp = () => {
         try {
           const targetFile = resolvePath(currentDir.current, args[0]);
           const content = args.slice(1).join(' ');
-          if (!content) {
-            term.writeln('\x1b[1;31mUsage: edit <file> <content_text> (Content cannot be empty)\x1b[0m');
-            break;
-          }
           await storageService.writeFile(targetFile, content);
           term.writeln(`\x1b[1;32m[✔] File edited successfully: ${args[0]}\x1b[0m`);
         } catch (e) {
@@ -500,7 +496,7 @@ const TerminalApp = () => {
     term.writeln(`  Storage Utilized:   ${metrics.totalBytes} Bytes`);
     term.writeln(`  Provider Volumes:    Local Files: ${metrics.localCount} | Cloud Uploads: ${metrics.cloudCount}`);
     term.writeln(`  Cloud Sync Link:    ${metrics.cloudConnected ? `CONNECTED (via ${metrics.cloudProvider})` : 'UNCONNECTED (Local Sandbox Only)'}`);
-    term.writeln(`  Mounted Disk:       ${storageService.localDirectoryHandle ? `MOUNTED at \\x1b[1;34m/local\\x1b[0m ("${storageService.localDirectoryHandle.name}")` : 'UNMOUNTED'}`);
+    term.writeln(`  Mounted Disk:       ${storageService.localDirectoryHandle ? 'MOUNTED at \x1b[1;34m/local\x1b[0m ("' + storageService.localDirectoryHandle.name + '")' : 'UNMOUNTED'}`);
     
     if (!metrics.cloudConnected) {
       term.writeln('');

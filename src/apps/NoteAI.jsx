@@ -107,7 +107,7 @@ const NoteAI = () => {
   };
 
   const handleOptionClick = (idx) => {
-    if (isAnswered) return;
+    if (isAnswered || !quizData[currentQuestionIdx]) return;
     setSelectedAns(idx);
     setIsAnswered(true);
     if (idx === quizData[currentQuestionIdx].correctAnswerIndex) {
@@ -125,13 +125,25 @@ const NoteAI = () => {
     }
   };
 
+  const toastRef = useRef(null);
+  const toastTimerRef = useRef(null);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(summary);
+    if (toastRef.current) {
+      toastRef.current.remove();
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    }
     const notification = document.createElement('div');
     notification.className = 'note-toast';
     notification.innerText = 'Copied to clipboard';
     document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 2000);
+    toastRef.current = notification;
+    toastTimerRef.current = setTimeout(() => {
+      notification.remove();
+      toastRef.current = null;
+      toastTimerRef.current = null;
+    }, 2000);
   };
 
   const handleDownload = () => {

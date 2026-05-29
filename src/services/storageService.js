@@ -81,7 +81,7 @@ class StorageService {
       if (stored) {
         this.vfs = JSON.parse(stored);
       } else {
-        this.vfs = { ...DEFAULT_VFS };
+        this.vfs = JSON.parse(JSON.stringify(DEFAULT_VFS));
         this.saveToDisk();
       }
       
@@ -594,7 +594,7 @@ class StorageService {
 
     fileKeys.forEach(key => {
       const file = this.vfs[key];
-      totalBytes += file.content.length;
+      totalBytes += (file.content || '').length;
       if (file.provider === 'local') localCount++;
       if (file.provider === 'cloud') cloudCount++;
       if (file.provider === 'hybrid') {

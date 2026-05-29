@@ -8,6 +8,11 @@ import { useOSStore } from '../store/useOSStore';
 import 'xterm/css/xterm.css';
 import './IDEApp.css';
 
+const generateId = () => {
+  try { return crypto.randomUUID(); }
+  catch { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+};
+
 // Extension-to-Language Mapping helper
 const getLanguageFromExtension = (filename) => {
   if (!filename) return 'plaintext';
@@ -179,7 +184,7 @@ export default function IDEApp() {
     await scanRecursive('/documents');
     await scanRecursive('/downloads');
     await scanRecursive('/system');
-    if (storageService.localConnected) {
+    if (storageService.localDirectoryHandle) {
       await scanRecursive('/local');
     }
     if (storageService.cloudConnected) {
@@ -769,7 +774,7 @@ export default function IDEApp() {
     let match;
     while ((match = writeRegex.exec(text)) !== null) {
       pending.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         type: match[1].toLowerCase(),
         path: match[2].trim(),
         content: match[3]
@@ -781,7 +786,7 @@ export default function IDEApp() {
     let delMatch;
     while ((delMatch = deleteRegex.exec(text)) !== null) {
       pending.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         type: 'delete',
         path: delMatch[1].trim(),
         content: null

@@ -109,7 +109,10 @@ export const useOSStore = create((set, get) => ({
     },
   ],
   activeWindowId: 'chrome',
-  maxZIndex: 3,
+  maxZIndex: Math.max(...(() => {
+    const wins = [{ id: 'notes', zIndex: 1 }, { id: 'crime', zIndex: 2 }, { id: 'chrome', zIndex: 3 }, { id: 'jarvis', zIndex: 4 }, { id: 'terminal', zIndex: 5 }, { id: 'ide', zIndex: 6 }, { id: 'file-explorer', zIndex: 7 }];
+    return wins.map(w => w.zIndex);
+  })()),
   isStartMenuOpen: false,
 
   toggleStartMenu: () => set((state) => ({ isStartMenuOpen: !state.isStartMenuOpen })),
@@ -175,17 +178,15 @@ export const useOSStore = create((set, get) => ({
 
   focusApp: (appId) => set((state) => {
     const w = state.windows.find((win) => win.id === appId);
-    if (w && w.zIndex < state.maxZIndex) {
-      const newZ = state.maxZIndex + 1;
-      return {
-        maxZIndex: newZ,
-        activeWindowId: appId,
-        windows: state.windows.map((win) =>
-          win.id === appId ? { ...win, zIndex: newZ } : win
-        ),
-      };
-    }
-    return { activeWindowId: appId };
+    if (!w) return state;
+    const newZ = state.maxZIndex + 1;
+    return {
+      maxZIndex: newZ,
+      activeWindowId: appId,
+      windows: state.windows.map((win) =>
+        win.id === appId ? { ...win, zIndex: newZ } : win
+      ),
+    };
   }),
 
   updateWindowPos: (appId, pos) => set((state) => ({

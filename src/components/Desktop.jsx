@@ -4,6 +4,8 @@ import { useMobile } from '../hooks/useMobile';
 import './Desktop.css';
 import './DesktopMobile.css';
 
+const ICON_WIDTH = 80;
+const ICON_HEIGHT = 90;
 const GRID_X = 100;
 const GRID_Y = 110;
 const OFFSET_X = 20;
@@ -46,8 +48,8 @@ const Desktop = () => {
     const snappedY = Math.round((tempPos.y - OFFSET_Y) / GRID_Y) * GRID_Y + OFFSET_Y;
     
     // Clamp to screen bounds
-    const finalX = Math.max(OFFSET_X, Math.min(snappedX, window.innerWidth - 100));
-    const finalY = Math.max(OFFSET_Y, Math.min(snappedY, window.innerHeight - 150));
+    const finalX = Math.max(OFFSET_X, Math.min(snappedX, window.innerWidth - ICON_WIDTH - OFFSET_X));
+    const finalY = Math.max(OFFSET_Y, Math.min(snappedY, window.innerHeight - ICON_HEIGHT - OFFSET_Y - 80));
     
     updateIconPos(draggingIconId, { x: finalX, y: finalY });
     setDraggingIconId(null);
